@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, render_template, request
 import json
 import os
-import shutil
 import tempfile
 
 app = Flask(__name__)
