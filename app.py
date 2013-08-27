@@ -1,39 +1,18 @@
 from flask import Flask, jsonify, render_template, request
 import json
+import os
+import shutil
+import tempfile
 
 app = Flask(__name__)
 
-# Our "storage" is just an in-memory list of dicts.
-files = [
-    {
-        'uid': 'foo',
-        'name': 'foo.txt',
-        'size': '124',
-        'parent_uid': "null",
-        'type': 'file'
-    },
-    {
-        'uid': 'bar',
-        'name': 'bar.txt',
-        'size': '124',
-        'parent_uid': "null",
-        'type': 'file'
-    },
-    {
-        'uid': 'baz',
-        'name': 'baz.txt',
-        'size': '124',
-        'parent_uid': "null",
-        'type': 'file'
-    },
-    {
-        'uid': 'qiz',
-        'name': 'qiz.txt',
-        'size': '124',
-        'parent_uid': "null",
-        'type': 'file'
-    },
-]
+from git_subprocess import Repository
+
+repo_path = '/tmp/test/'
+
+# Set up a git repository for a storage backend
+repo = Repository(repo_path or tempfile.mkdtemp())
+repo.init()
 
 # Homepage - just render the template
 @app.route('/')
@@ -43,37 +22,54 @@ def index():
 # DELETE verb
 @app.route('/api/files/', methods=['DELETE', ])
 def delete_files():
-    deleted = []
+    # since multiple items could be deleted at once, iterate the list.
+    for id in json.loads(request.form.get('ids', '[]')):
+        repo._rm_file(id)
+    repo.commit(
+        author='Internet User <anon@inter.net>',
+        message='Deleted file(s)',
+    )
 
-    # Contrived - remove each UID from the list of dicts
-    for id in json.loads(request.form.get('ids')):
-        for idx, f in enumerate(files):
-            print id, f
-            if f.get('uid') == id:
-                deleted.append(id)
-                del files[idx]
-
-    return jsonify({'deleted': deleted})
+    return jsonify({'deleted': request.form.get('ids')})
 
 # GET verb
 @app.route('/api/files/', methods=['GET', ])
 def get_files():
-    return jsonify({'files': files})
+    return jsonify({
+        'files': [
+            _file_dict(f)
+            for f in os.listdir(repo.path)
+            if os.path.isfile(os.path.join(repo.path, f))
+        ]
+    })
 
 # POST verb
 @app.route('/api/files/', methods=['POST', ])
 def add_file():
     f = request.files.get('file')
-    f_d = {
-        'uid': f.filename.split('.')[0],
-        'name': f.filename,
-        'size': 123,
-        'parent_uid': "null",
-        'type': 'file',
-    }
-    files.append(f_d)
-    return json.dumps([f_d, ])
 
+    # write the file out to its new location
+    new_path = os.path.join(repo.path, f.filename)
+    with open(new_path, 'w') as outfile:
+        outfile.write(f.read())
+
+    # add it to git and commit
+    repo.add_file(
+        file_path=f.filename,
+        commit_author='Internet User <anon@inter.net>',
+        commit_message='Commited file {}'.format(f.filename)
+    )
+
+    return json.dumps([_file_dict(new_path), ])
+
+def _file_dict(f):
+    return {
+            'uid': f,
+            'name': f,
+            'size': os.path.getsize(os.path.join(repo.path, f)),
+            'type': 'file',
+            'parent_uid': 'null'
+    }
 
 
 if __name__ == '__main__':

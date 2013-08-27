@@ -1,5 +1,16 @@
 $(function() {
 
+    var bytesToText = function(row, cell, value, columnDef, dataContext) {
+        var bytes = dataContext['size'];
+        var sizes = ['B','KB','MB','GB','TB']
+        var unit = 0
+        while(bytes > 1024){
+            bytes = bytes / 1024;
+            unit++
+        }
+        return bytes.toPrecision(2) + " " + sizes[unit]
+    }
+
     // Defined as a function so this can be used later to refresh the grid
     //  (this is a convention, not necessary for hGrid)
     var get_items = function() { return $.ajax({ 'method': 'GET', 'url': '/api/files/', 'async': false}).responseJSON['files']; };
@@ -28,7 +39,8 @@ $(function() {
                 name: "Size",
                 field: "size",
                 width: 90,
-                sortable: true
+                sortable: true,
+                formatter: bytesToText
             }
         ],
         enableCellNavigation: false,
