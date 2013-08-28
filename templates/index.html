@@ -10,6 +10,8 @@
 </head>
 <body>
 
+<input type='button' id='addFolder' value='Add Folder'></input>
+
 <div id="myGridBreadcrumbs"></div>
 <div id="myGrid" class="dropzone dz-Clickable" style="width:600px;height:500px;"></div>
 
@@ -83,7 +85,29 @@
     });
 
 
+    $(function() {
+        $('#addFolder').on('click', function() {
+            var folder = prompt("Folder Name?");
+            $.post(
+                '/api/files/',
+                {
+                    action: 'add_folder',
+                    name: folder,
+                    path: ''
+                },
+                function(data) {
+                    data = $.parseJSON(data)[0]
+                    if (typeof(data) !== 'undefined') {
+                        myGrid.addItem(data)
+                    } else {
+                        alert('duplicate folder :(')
+                    }
 
+                }
+            );
+
+        })
+    })
 
 </script>
 

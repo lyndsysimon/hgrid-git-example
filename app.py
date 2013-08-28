@@ -102,6 +102,16 @@ def add_file():
             if os.path.pardir in path:
                 abort(400)
 
+            try:
+                os.mkdir(os.path.join(repo_path, path, dirname))
+            except OSError:
+                return json.dumps([])
+
+            return json.dumps([
+                _file_dict(os.path.join(path, dirname)), ]
+            )
+
+
 
     else:
         abort(400)
@@ -118,7 +128,7 @@ def _file_dict(f):
             else 'folder' if os.path.isdir(path)
             else ''
         ),
-        'parent_uid': os.path.dirname(f)
+        'parent_uid': os.path.dirname(f) or "null"
     }
 
 
