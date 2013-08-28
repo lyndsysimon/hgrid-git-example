@@ -19,14 +19,6 @@
 <script src="/static/js/jquery.event.drag-2.2.js"></script>
 <script src="/static/js/jquery.event.drop-2.2.js"></script>
 
-
-
-
-
-
-
-
-
 <input id='clickable' type='hidden'></input>
 
 
@@ -50,9 +42,12 @@
         }
     };
 
+    var get_items = function() { return $.parseJSON($.ajax({'url': '/api/files', 'type': 'GET', 'async': false}).responseText)['files']
+    };
+
     var myGrid = HGrid.create({
         container: "#myGrid",
-        info: [{"size": 561, "type": "folder", "uid": "another", "name": "another", "parent_uid": "null"}, {"size": 3, "type": "folder", "uid": "another/l_dir", "parent_uid": "another", "name": "l_dir"}, {"size": 3, "type": "folder", "uid": "another/l_dir/another", "parent_uid": "another/l_dir", "name": "another"}, {"size": 3, "type": "file", "uid": "another/l_dir/another/foo.txt", "parent_uid": "another/l_dir/another", "name": "foo.txt"}, {"size": 558, "type": "folder", "uid": "another/maybe", "parent_uid": "another", "name": "maybe"}, {"size": 486, "type": "file", "uid": "another/maybe/checker2.txt", "parent_uid": "another/maybe", "name": "checker2.txt"}, {"size": 72, "type": "file", "uid": "another/maybe/checker1.txt", "parent_uid": "another/maybe", "name": "checker1.txt"}, {"size": 83, "type": "folder", "uid": "try", "name": "try", "parent_uid": "null"}, {"size": 27, "type": "file", "uid": "try/fit.txt", "parent_uid": "try", "name": "fit.txt"}, {"size": 17, "type": "file", "uid": "try/test2.txt", "parent_uid": "try", "name": "test2.txt"}, {"size": 4, "type": "file", "uid": "try/test3.txt", "parent_uid": "try", "name": "test3.txt"}, {"size": 25, "type": "file", "uid": "try/test4.txt", "parent_uid": "try", "name": "test4.txt"}, {"size": 10, "type": "file", "uid": "try/FileView.py", "parent_uid": "try", "name": "FileView.py"}, {"size": 17, "type": "file", "uid": "zlast.txt", "name": "zlast.txt", "parent_uid": "null"}],
+        info: get_items(),
         columns:[
             {id: "uid", name: "uid", width: 40, field: "uid"},
             {id: "name", name: "Name", field: "name", width: 520, cssClass: "cell-title", formatter: TaskNameFormatter, editor: Slick.Editors.Text, sortable: true, defaultSortAsc: true}
