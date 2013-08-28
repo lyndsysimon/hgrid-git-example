@@ -347,11 +347,17 @@ var HGrid = {
         var value = {'item': item, 'parent':parent};
         var event_status = _this.hGridBeforeAdd.notify(value);
         if(event_status || typeof(event_status)==='undefined'){
-            if(item['parent_uid']!="null" && !item['uploadBar']){
-                var parent_path = parent['path'];
-                item['path']=[];
-                item['path'].concat(parent_path, item['uid']);
-                item['sortpath']=item['path'].join('/');
+            if(!item['uploadBar']){
+                if(item['parent_uid']!="null"){
+                    var parent_path = parent['path'];
+                    item['path']=[];
+                    item['path'].concat(parent_path, item['uid']);
+                    item['sortpath']=item['path'].join('/');
+                }
+                else{
+                    item['path']=[item['uid']];
+                    item['sortpath']=item['path'].join('/');
+                }
             }
             _this.data.splice(parent['id']+1, 0,item);
             _this.prepJava(_this.data);

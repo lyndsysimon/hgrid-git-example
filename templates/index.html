@@ -9,11 +9,28 @@
     <link href='/static/css/file-viewer-core.css' rel='stylesheet'>
 </head>
 <body>
-
 <input type='button' id='addFolder' value='Add Folder'></input>
 
 <div id="myGridBreadcrumbs"></div>
-<div id="myGrid" class="dropzone dz-Clickable" style="width:600px;height:500px;"></div>
+<div style='width:810px'>
+
+    <pre style='
+float:right;
+height:480px;
+width:380px;
+background-color:white;
+border:1px solid #333;
+padding:10px;
+font: "Ubuntu Mono", "Courier", mono;
+margin:0;
+overflow:scroll;
+'></pre>
+        <div id="myGrid" class="dropzone dz-Clickable" style="width:400px;height:500px;"></div>
+</div>
+
+
+
+
 
 
 <script src="/static/js/jquery-1.7.min.js"></script>
@@ -63,6 +80,10 @@
     myGrid.hGridOnUpload.subscribe(function(e, args){
         var newSlickInfo = JSON.parse(args.xhr.response)[0];
         myGrid.uploadItem(newSlickInfo);
+        $.get('/api/git_hist/', function(data) {
+            $('pre').text(data)
+        })
+        $('pre').animate({'background-color': 'blue'}, 100, 'swing', function() { $('pre').animate({'background-color': 'white'}, 100) })
         return true;
     });
 
@@ -100,7 +121,7 @@
                     if (typeof(data) !== 'undefined') {
                         myGrid.addItem(data)
                     } else {
-                        alert('duplicate folder :(')
+                        alert('Server Error!')
                     }
 
                 }

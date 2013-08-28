@@ -116,6 +116,15 @@ def add_file():
     else:
         abort(400)
 
+@app.route('/api/git_hist/')
+def git_hist():
+    import subprocess
+    try:
+        return subprocess.check_output(('git', 'hist'), cwd=repo_path)
+    except subprocess.CalledProcessError:
+        return ''
+
+
 def _file_dict(f):
     path = os.path.join(repo.path, f)
 
