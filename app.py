@@ -71,20 +71,28 @@ def get_files():
 def add_file():
     if len(request.files) > 0:
         f = request.files.get('file')
+        new_path = os.path.join(repo.path, request.form.get('destination'))
+
+        mkpath(new_path)
 
         # write the file out to its new location
-        new_path = os.path.join(repo.path, f.filename)
+        new_path = os.path.join(new_path, f.filename)
         with open(new_path, 'w') as outfile:
             outfile.write(f.read())
 
         # add it to git and commit
         repo.add_file(
-            file_path=f.filename,
+            file_path=new_path,
             commit_author='Internet User <anon@inter.net>',
             commit_message='Committed file {}'.format(f.filename)
         )
 
-        return json.dumps([_file_dict(new_path), ])
+        return json.dumps(
+            [_file_dict(os.path.join(
+                request.form.get('destination'),
+                f.filename
+            )), ]
+        )
     elif request.form.get('action'):
         if request.form.get('action') == 'add_folder':
             path = request.form.get('path')
@@ -103,14 +111,14 @@ def _file_dict(f):
 
     return {
         'uid': f,
-        'name': f,
+        'name': os.path.basename(f),
         'size': os.path.getsize(os.path.join(repo.path, f)),
         'type': (
             'file' if os.path.isfile(path)
             else 'folder' if os.path.isdir(path)
             else ''
         ),
-        'parent_uid': 'null'
+        'parent_uid': os.path.dirname(f)
     }
 
 
