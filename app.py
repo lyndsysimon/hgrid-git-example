@@ -36,6 +36,12 @@ def delete_files():
 def get_files():
     nodes = []
     for root, dirs, files in os.walk(repo.path):
+        files = [f for f in files if not _is_hidden(
+            os.path.abspath(os.path.join(root, f))
+        )]
+        dirs = [d for d in dirs if not _is_hidden(
+            os.path.abspath(os.path.join(root, d))
+        )]
         path = os.path.relpath(root, repo.path)
         # add files
         for f in files:
@@ -54,7 +60,7 @@ def get_files():
                 'name': dir,
                 'type': 'folder',
                 'parent_uid': "null" if path == os.path.curdir else path,
-                'depth': len(path.split('/')) - 1,
+                'depth': 0 if path == os.path.curdir else len(path.split('/')),
             })
 
     return jsonify({'files': nodes})
@@ -98,10 +104,17 @@ def _file_dict(f):
 def _is_hidden(path):
     ''' Return True if a file is hidden, else false.
 
-     This doesn't support anything except files beginning with "." for now.
-     '''
-    name = os.path.basename(os.path.abspath(os.path.join(repo.path, path)))
-    return name.startswith('.')
+    This doesn't support anything except files beginning with "." for now.
+    '''
+
+    if os.path.basename(path).startswith('.'):
+        return True
+    else:
+        dir = os.path.dirname(path)
+        if dir == path:
+            return False
+        else:
+            return _is_hidden(dir)
 
 
 if __name__ == '__main__':
