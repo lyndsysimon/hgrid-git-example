@@ -1,21 +1,96 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>hGrid+git Example</title>
-        <link href='/static/css/slick.grid.css' rel='stylesheet'>
-        <link href='/static/css/jquery-ui-1.8.16.custom.css' rel='stylesheet'>
-        <link href='/static/css/file-viewer-core.css' rel='stylesheet'>
-        <script src='/static/js/jquery-1.10.2.min.js'></script>
-        <script src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
-        <script src="/static/js/jquery.event.drag-2.2.js"></script>
-        <script src="/static/js/jquery.event.drop-2.2.js"></script>
-        <script src="/static/js/hgrid-dependencies.js"></script>
-        <script src="/static/js/hgrid.js"></script>
-        <script src='/static/js/example-grid.js'></script>
-    </head>
-    <body>
-        <button id='clickable'>Add file</button>
-        <div id='exampleGrid' class='dropzone files-page'></div
-    </body>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+    <title>HGrid</title>
+    <link href='/static/css/slick.grid.css' rel='stylesheet'>
+    <link href='/static/css/jquery-ui-1.8.16.custom.css' rel='stylesheet'>
+    <link href='/static/css/examples.css' rel='stylesheet'>
+    <link href='/static/css/file-viewer-core.css' rel='stylesheet'>
+</head>
+<body>
 
+<div id="myGridBreadcrumbs"></div>
+<div id="myGrid" class="dropzone dz-Clickable" style="width:600px;height:500px;"></div>
+
+
+<script src="/static/js/jquery-1.7.min.js"></script>
+<script src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script src="/static/js/jquery.event.drag-2.2.js"></script>
+<script src="/static/js/jquery.event.drop-2.2.js"></script>
+
+
+
+
+
+
+
+
+
+<input id='clickable' type='hidden'></input>
+
+
+<script src="/static/js/hgrid-dependencies.js"></script>
+<script src="/static/js/hgrid.js"></script>
+
+
+<script>
+    var info = [{"size": 561, "type": "folder", "uid": "another", "name": "another", "parent_uid": "null"}, {"size": 3, "type": "folder", "uid": "another/l_dir", "parent_uid": "another", "name": "l_dir"}, {"size": 3, "type": "folder", "uid": "another/l_dir/another", "parent_uid": "another/l_dir", "name": "another"}, {"size": 3, "type": "file", "uid": "another/l_dir/another/foo.txt", "parent_uid": "another/l_dir/another", "name": "foo.txt"}, {"size": 558, "type": "folder", "uid": "another/maybe", "parent_uid": "another", "name": "maybe"}, {"size": 486, "type": "file", "uid": "another/maybe/checker2.txt", "parent_uid": "another/maybe", "name": "checker2.txt"}, {"size": 72, "type": "file", "uid": "another/maybe/checker1.txt", "parent_uid": "another/maybe", "name": "checker1.txt"}, {"size": 83, "type": "folder", "uid": "try", "name": "try", "parent_uid": "null"}, {"size": 27, "type": "file", "uid": "try/fit.txt", "parent_uid": "try", "name": "fit.txt"}, {"size": 17, "type": "file", "uid": "try/test2.txt", "parent_uid": "try", "name": "test2.txt"}, {"size": 4, "type": "file", "uid": "try/test3.txt", "parent_uid": "try", "name": "test3.txt"}, {"size": 25, "type": "file", "uid": "try/test4.txt", "parent_uid": "try", "name": "test4.txt"}, {"size": 10, "type": "file", "uid": "try/FileView.py", "parent_uid": "try", "name": "FileView.py"}, {"size": 17, "type": "file", "uid": "zlast.txt", "name": "zlast.txt", "parent_uid": "null"}];
+    var TaskNameFormatter = function(row, cell, value, columnDef, dataContext) {
+        value = value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        var spacer = "<span style='display:inline-block;height:1px;width:" + (15 * dataContext["indent"]) + "px'></span>";
+        if (dataContext['type']=='folder') {
+            if (dataContext._collapsed) {
+                return spacer + " <span class='toggle expand nav-filter-item' data-hgrid-nav=" + dataContext['uid'] + "></span><span class='folder'></span>&nbsp;" + value + "</a>";
+            } else {
+                return spacer + " <span class='toggle collapse nav-filter-item' data-hgrid-nav=" + dataContext['uid'] + "></span><span class='folder'></span>&nbsp;" + value + "</a>";
+            }
+        } else {
+            return spacer + " <span class='toggle'></span><span class='file'></span>&nbsp;" + value;
+        }
+    };
+
+    var myGrid = HGrid.create({
+        container: "#myGrid",
+        info: [{"size": 561, "type": "folder", "uid": "another", "name": "another", "parent_uid": "null"}, {"size": 3, "type": "folder", "uid": "another/l_dir", "parent_uid": "another", "name": "l_dir"}, {"size": 3, "type": "folder", "uid": "another/l_dir/another", "parent_uid": "another/l_dir", "name": "another"}, {"size": 3, "type": "file", "uid": "another/l_dir/another/foo.txt", "parent_uid": "another/l_dir/another", "name": "foo.txt"}, {"size": 558, "type": "folder", "uid": "another/maybe", "parent_uid": "another", "name": "maybe"}, {"size": 486, "type": "file", "uid": "another/maybe/checker2.txt", "parent_uid": "another/maybe", "name": "checker2.txt"}, {"size": 72, "type": "file", "uid": "another/maybe/checker1.txt", "parent_uid": "another/maybe", "name": "checker1.txt"}, {"size": 83, "type": "folder", "uid": "try", "name": "try", "parent_uid": "null"}, {"size": 27, "type": "file", "uid": "try/fit.txt", "parent_uid": "try", "name": "fit.txt"}, {"size": 17, "type": "file", "uid": "try/test2.txt", "parent_uid": "try", "name": "test2.txt"}, {"size": 4, "type": "file", "uid": "try/test3.txt", "parent_uid": "try", "name": "test3.txt"}, {"size": 25, "type": "file", "uid": "try/test4.txt", "parent_uid": "try", "name": "test4.txt"}, {"size": 10, "type": "file", "uid": "try/FileView.py", "parent_uid": "try", "name": "FileView.py"}, {"size": 17, "type": "file", "uid": "zlast.txt", "name": "zlast.txt", "parent_uid": "null"}],
+        columns:[
+            {id: "uid", name: "uid", width: 40, field: "uid"},
+            {id: "name", name: "Name", field: "name", width: 520, cssClass: "cell-title", formatter: TaskNameFormatter, editor: Slick.Editors.Text, sortable: true, defaultSortAsc: true}
+        ],
+        urlAdd: "/uploader",
+        breadcrumbBox: "#myGridBreadcrumbs",
+        dropZone: true,
+        enableCellNavigation: false
+    });
+
+    myGrid.hGridOnUpload.subscribe(function(e, args){
+        var newSlickInfo = JSON.parse(args.xhr.response)[0];
+        myGrid.uploadItem(newSlickInfo);
+        return true;
+    });
+
+    myGrid.hGridBeforeMove.subscribe(function(e, args){
+        var insertBefore = myGrid.getItemByValue(myGrid.data, args.insertBefore, 'id')['parent_uid'];
+        var new_parent = myGrid.getItemByValue(myGrid.data, insertBefore, 'uid')['name'];
+
+            console.log("Moving " + myGrid.getItemByValue(myGrid.data, args.rows[0], 'uid')['name'] + " to " + new_parent);
+            return true;
+
+    });
+
+    myGrid.hGridAfterMove.subscribe(function(e, args){
+        if(args.success){
+            console.log("Done moving");
+        }
+        else{
+            console.log("Try again");
+        }
+    });
+
+
+
+
+</script>
+
+</body>
 </html>

@@ -25,7 +25,9 @@ var HGrid = {
         dropZonePreviewsContainer: null,
         navLevel: "null",
         breadcrumbBox: null,
-        largeGuide: true
+        largeGuide: true,
+        topCrumb: "HGrid",
+        clickUpload: null
     },
 
     Slick: {
@@ -110,7 +112,7 @@ var HGrid = {
         this.Slick.grid.render();
 
         this.setupListeners();
-//        this.updateBreadcrumbsBox(this.data[0]['uid']);
+        this.updateBreadcrumbsBox();
         if(this.options.dropZone){
             this.dropZoneInit(this);
         }
@@ -198,6 +200,8 @@ var HGrid = {
         $(bcb).addClass("breadcrumb");
         var spacer = " / ";
         var crumbs = [];
+        var topCrumb = '<span class="hgrid-breadcrumb"><a href="#" data-hgrid-nav="">' + _this.options.topCrumb + '</a></span>';
+        crumbs.push(topCrumb);
         $(bcb).empty();
         var levels = [];
         if (item && itemUid!=="") {
@@ -236,7 +240,7 @@ var HGrid = {
         }
         var myDropzone = new Dropzone(hGrid.options.container, {
             url: url,
-            clickable: "#clickable",
+            clickable: hGrid.options.clickUpload,
             previewsContainer: hGrid.options.dropZonePreviewsContainer,
             addRemoveLinks: true
         } );
@@ -310,9 +314,8 @@ var HGrid = {
         myDropzone.on("success", function(file) {
             var value;
             var event_status = hGrid.hGridOnUpload.notify(file);
-            if (event_status || typeof(event_status) == 'undefined' ){
+            if (event_status || typeof(event_status)==undefined){
                 value = {item: JSON.parse(file.xhr.response)[0], success: true};
-                console.log(value)
                 value['item']['name'] = file.name;
                 hGrid.hGridAfterUpload.notify(value);
             }
