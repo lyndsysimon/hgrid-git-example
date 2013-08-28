@@ -7,7 +7,7 @@ app = Flask(__name__)
 
 from git_subprocess import Repository
 
-repo_path = '/tmp/test/'
+repo_path = '/Users/lyndsysimon/Documents/Development/cos/hgrid-example/'
 
 # Set up a git repository for a storage backend
 repo = Repository(repo_path or tempfile.mkdtemp())
@@ -34,13 +34,30 @@ def delete_files():
 # GET verb
 @app.route('/api/files/', methods=['GET', ])
 def get_files():
-    return jsonify({
-        'files': [
-            _file_dict(f)
-            for f in os.listdir(repo.path)
-            if os.path.isfile(os.path.join(repo.path, f))
-        ]
-    })
+    nodes = []
+    for root, dirs, files in os.walk(repo.path):
+        path = os.path.relpath(root, repo.path)
+        # add files
+        for f in files:
+            nodes.append({
+                'uid': os.path.join(path, f) if path != os.path.curdir else f,
+                'name': f,
+                'type': 'file',
+                'size': os.path.getsize(os.path.join(root, f)),
+                'parent_uid': "null" if path == os.path.curdir else path,
+                'depth': 0 if path == os.path.curdir else len(path.split('/')),
+            })
+        # add subdirectories
+        for dir in dirs:
+            nodes.append({
+                'uid': os.path.join(path, dir) if path != os.path.curdir else dir,
+                'name': dir,
+                'type': 'folder',
+                'parent_uid': "null" if path == os.path.curdir else path,
+                'depth': len(path.split('/')) - 1,
+            })
+
+    return jsonify({'files': nodes})
 
 # POST verb
 @app.route('/api/files/', methods=['POST', ])
@@ -56,19 +73,35 @@ def add_file():
     repo.add_file(
         file_path=f.filename,
         commit_author='Internet User <anon@inter.net>',
-        commit_message='Commited file {}'.format(f.filename)
+        commit_message='Committed file {}'.format(f.filename)
     )
 
     return json.dumps([_file_dict(new_path), ])
 
+
 def _file_dict(f):
+    path = os.path.join(repo.path, f)
+
     return {
-            'uid': f,
-            'name': f,
-            'size': os.path.getsize(os.path.join(repo.path, f)),
-            'type': 'file',
-            'parent_uid': 'null'
+        'uid': f,
+        'name': f,
+        'size': os.path.getsize(os.path.join(repo.path, f)),
+        'type': (
+            'file' if os.path.isfile(path)
+            else 'folder' if os.path.isdir(path)
+            else ''
+        ),
+        'parent_uid': 'null'
     }
+
+
+def _is_hidden(path):
+    ''' Return True if a file is hidden, else false.
+
+     This doesn't support anything except files beginning with "." for now.
+     '''
+    name = os.path.basename(os.path.abspath(os.path.join(repo.path, path)))
+    return name.startswith('.')
 
 
 if __name__ == '__main__':

@@ -1,14 +1,46 @@
 $(function() {
 
-    var bytesToText = function(row, cell, value, columnDef, dataContext) {
-        var bytes = dataContext['size'];
+    var bytesToText = function(sizeInBytes) {
+        var bytes = sizeInBytes;
+        if (typeof(bytes) == 'undefined') { return '' }
         var sizes = ['B','KB','MB','GB','TB']
         var unit = 0
-        while(bytes > 1024){
+        while(bytes > 1024) {
             bytes = bytes / 1024;
             unit++
         }
-        return bytes.toPrecision(2) + " " + sizes[unit]
+        return bytes.toFixed(unit < 2 ? unit : 2)
+            + " " + sizes[unit]
+
+    }
+
+    var isNumeric = function(n) { return !isNaN(parseFloat(n)) && isFinite(n); }
+
+    var formatSize = function(row, cell, value, columnDef, dataContext) {
+        if (isNumeric(dataContext['size'])) {
+            return bytesToText(dataContext['size'])
+        } else {
+            return '--'
+        }
+    }
+
+    var indentByDepth = function(row, cell, value, columnDef, dataContext) {
+        var indent = (
+            dataContext['depth'] > 1
+            ? 10 * dataContext['depth'] - 1
+            : 0 );
+        var text = (
+            dataContext['depth'] == 0
+                ? dataContext['name']
+                : '⌞ ' + dataContext['name'] );
+
+        var obj = $('<span></span>')
+        obj.css('padding-left', indent);
+        obj.text(text); // .text() escapes
+        obj.addClass(
+            'hgrid-' + ( dataContext['type'] || 'none' )
+        );
+        return obj[0].outerHTML
     }
 
     // Defined as a function so this can be used later to refresh the grid
@@ -32,7 +64,8 @@ $(function() {
                 field: "name",
                 cssClass: "cell-title",
                 sortable: true,
-                defaultSortAsc: true
+                defaultSortAsc: true,
+                formatter: indentByDepth
             },
             {
                 id: "size",
@@ -40,7 +73,7 @@ $(function() {
                 field: "size",
                 width: 90,
                 sortable: true,
-                formatter: bytesToText
+                formatter: formatSize
             }
         ],
         enableCellNavigation: false,
@@ -93,6 +126,11 @@ $(function() {
         // After an item is uploaded, update the grid.
         myGrid.uploadItem(args['item'])
     });
+
+    myGrid.hGridBeforeMove.subscribe(function(e, args) {
+        console.log(args);
+        return false
+    })
 
 
 })
